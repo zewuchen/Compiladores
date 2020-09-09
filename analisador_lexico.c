@@ -52,20 +52,21 @@ int main(void){
             // TODO: Fazer algo com o ERRO
             break;
         } else if(atomo.atomo == IDENTIFICADOR) {
-             // TODO: Fazer algo com o IDENTIFICADOR
+            // TODO: Fazer algo com o IDENTIFICADOR
             break;
         } else if(atomo.atomo == NUMERO_INTEIRO) {
-             // TODO: Fazer algo com o NUMERO_INTEIRO
+            // TODO: Fazer algo com o NUMERO_INTEIRO
             break;
         } else if(atomo.atomo == ATRIBUICAO) {
-             // TODO: Fazer algo com o ATRIBUICAO
+            // TODO: Fazer algo com o ATRIBUICAO
             break;
         } else if(atomo.atomo == WHILE) {
-             // TODO: Fazer algo com o WHILE
+            // TODO: Fazer algo com o WHILE
             break;
         } else if(atomo.atomo == EOS) {
-             // TODO: Fazer algo com o EOS
-             printf("Fim de arquivo EOS\n");
+            // TODO: Fazer algo com o EOS
+            printf("AAAA %s\n",atomo.atributo_ID);
+            fprintf(fp_saida,"%s",atomo.atributo_ID);
             break;
         }
     }
@@ -79,6 +80,7 @@ int main(void){
 
 TInfoAtomo obter_atomo() {
     TInfoAtomo atomo;
+    atomo.atributo_ID[0]= *buffer;
     atomo.atomo = EOS;
     return atomo;
 }
