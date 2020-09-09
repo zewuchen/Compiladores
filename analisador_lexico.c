@@ -50,7 +50,7 @@ int main(void){
     TInfoAtomo atomo = obter_atomo(); // Inicia pegando o primeiro átomo
     while(1) {
         if(atomo.atomo == ERRO) {
-            // TODO: Fazer algo com o ERRO
+            fprintf(fp_saida,"Linha: %d - ERRO\n", linha);
             break;
         } else if(atomo.atomo == IDENTIFICADOR) {
             // TODO: Fazer algo com o IDENTIFICADOR
