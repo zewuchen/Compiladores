@@ -18,6 +18,7 @@ typedef struct {
 } TInfoAtomo;
 
 char *buffer;
+int linha = 0;
 TInfoAtomo obter_atomo();
 
 int main(void){
@@ -66,6 +67,7 @@ int main(void){
         } else if(atomo.atomo == EOS) {
             // TODO: Fazer algo com o EOS
             printf("Palavra ID %s\n",atomo.atributo_ID);
+            printf("Linha %d\n",linha);
             fprintf(fp_saida,"%s",atomo.atributo_ID);
             break;
         }
@@ -82,5 +84,6 @@ TInfoAtomo obter_atomo() {
     TInfoAtomo atomo;
     atomo.atributo_ID[0]= *buffer;
     atomo.atomo = EOS;
+    linha++;
     return atomo;
 }
