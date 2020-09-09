@@ -68,7 +68,7 @@ int main(void){
             // TODO: Fazer algo com o EOS
             printf("Palavra ID %s\n",atomo.atributo_ID);
             printf("Linha %d\n",linha);
-            fprintf(fp_saida,"%s",atomo.atributo_ID);
+            fprintf(fp_saida,"Linha: %d - Identificador - %s\n", linha, atomo.atributo_ID);
             break;
         }
     }
@@ -85,5 +85,6 @@ TInfoAtomo obter_atomo() {
     atomo.atributo_ID[0]= *buffer;
     atomo.atomo = EOS;
     linha++;
+
     return atomo;
 }
