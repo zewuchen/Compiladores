@@ -1,7 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef enum {
+    ERRO,
+    IDENTIFICADOR, 
+    NUMERO_INTEIRO, 
+    ATRIBUICAO, 
+    WHILE,
+    EOS
+} TAtomo;
+
+typedef struct {
+    TAtomo atomo;
+    int linha;
+    int atributo_numero;
+    char atributo_ID[15];
+} TInfoAtomo;
+
 char *buffer;
+TInfoAtomo obter_atomo();
 
 int main(void){
     FILE *fp_entrada, *fp_saida;
@@ -28,11 +45,40 @@ int main(void){
     }
 
     iniBuffer = buffer;
-    // rotina(fp_saida); // Implementar os requisitos para o analisador léxico
+
+    TInfoAtomo atomo = obter_atomo(); // Inicia pegando o primeiro átomo
+    while(1) {
+        if(atomo.atomo == ERRO) {
+            // TODO: Fazer algo com o ERRO
+            break;
+        } else if(atomo.atomo == IDENTIFICADOR) {
+             // TODO: Fazer algo com o IDENTIFICADOR
+            break;
+        } else if(atomo.atomo == NUMERO_INTEIRO) {
+             // TODO: Fazer algo com o NUMERO_INTEIRO
+            break;
+        } else if(atomo.atomo == ATRIBUICAO) {
+             // TODO: Fazer algo com o ATRIBUICAO
+            break;
+        } else if(atomo.atomo == WHILE) {
+             // TODO: Fazer algo com o WHILE
+            break;
+        } else if(atomo.atomo == EOS) {
+             // TODO: Fazer algo com o EOS
+             printf("Fim de arquivo EOS\n");
+            break;
+        }
+    }
 
     free(iniBuffer);
     fclose(fp_entrada);
     fclose(fp_saida);
     
     return 0;
+}
+
+TInfoAtomo obter_atomo() {
+    TInfoAtomo atomo;
+    atomo.atomo = EOS;
+    return atomo;
 }
