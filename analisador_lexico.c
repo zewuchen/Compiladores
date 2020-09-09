@@ -65,7 +65,7 @@ int main(void){
             break;
         } else if(atomo.atomo == EOS) {
             // TODO: Fazer algo com o EOS
-            printf("AAAA %s\n",atomo.atributo_ID);
+            printf("Palavra ID %s\n",atomo.atributo_ID);
             fprintf(fp_saida,"%s",atomo.atributo_ID);
             break;
         }
