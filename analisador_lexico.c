@@ -29,7 +29,7 @@ TInfoAtomo atomoIdentificador();
 TInfoAtomo atomoInteiro();
 
 int main(void) {
-    FILE *fp_entrada, *fp_saida;
+    FILE *fp_entrada;
     char *iniBuffer;
     
     fp_entrada = fopen("entrada.c", "r"); // Abre o arquivo
@@ -44,41 +44,33 @@ int main(void) {
     buffer = (char*)calloc(tamanho+1,sizeof(char)); // Aloca a memoria para guardar o arquivo lido
     fread(buffer, sizeof(char),tamanho,fp_entrada); // Lê de uma vez só o arquivo
     
-    printf("Arquivo \n%s", buffer); // Imprime o arquivo
-
-    fp_saida = fopen("saida.c", "w+");// Abre o arquivo de saida, w+ abre para escrita e se o arquivo não existir cria
-    if(!fp_saida){ // Testa se abriu corretamente
-        printf("Não conseguiu abriu o arquivo de saída\n");
-        return 1;
-    }
+    // printf("Arquivo \n%s", buffer); // Imprime o arquivo
 
     iniBuffer = buffer;
 
     // Inicia pegando o primeiro átomo
     while(1) {
         TInfoAtomo atomo = obter_atomo();
-        printf("\n-----ATOMO TIPO %d", atomo.atomo);
         if(atomo.atomo == ERRO) {
-            fprintf(fp_saida,"Linha: %d - ERRO\n", atomo.linha);
+            printf("\nLinha: %d - ERRO", atomo.linha);
             break;
         } else if(atomo.atomo == IDENTIFICADOR) {
-            fprintf(fp_saida,"Linha: %d - Identificador - %s\n", atomo.linha, atomo.atributo_ID);
+            printf("\nLinha: %d - Identificador - %s", atomo.linha, atomo.atributo_ID);
         } else if(atomo.atomo == NUMERO_INTEIRO) {
             char number[TAMANHO];
-            fprintf(fp_saida,"Linha: %d - Número Inteiro - %d\n", atomo.linha, atomo.atributo_numero);
+            printf("\nLinha: %d - Número Inteiro - %d", atomo.linha, atomo.atributo_numero);
         } else if(atomo.atomo == ATRIBUICAO) {
-            fprintf(fp_saida,"Linha: %d - Operador Atribuição\n", atomo.linha);
+            printf("\nLinha: %d - Operador Atribuição", atomo.linha);
         } else if(atomo.atomo == WHILE) {
-            fprintf(fp_saida,"Linha: %d - While\n", atomo.linha);
+            printf("\nLinha: %d - While\n", atomo.linha);
         } else if(atomo.atomo == EOS) {
-            fprintf(fp_saida,"Linha: %d - Fim de String(EOS)\n", atomo.linha);
+            printf("\nLinha: %d - Fim de String(EOS)", atomo.linha);
             break;
         }
     }
 
     free(iniBuffer);
     fclose(fp_entrada);
-    fclose(fp_saida);
     
     return 0;
 }
@@ -86,13 +78,18 @@ int main(void) {
 TInfoAtomo obter_atomo() {
     TInfoAtomo atomo;
     atomo.atomo = EOS;
-    atomo.linha = globalLinha;
 
     // Acrescentar linhas
-    if(*buffer == '\n') {
+    if(*buffer == '\n' || *buffer == '\r') {
         globalLinha++;
-        printf("Linhas %d", globalLinha);
+        buffer++;
     }
+
+    if(*buffer == ' ' || *buffer == '\t') {
+        buffer++;
+    }
+
+    atomo.linha = globalLinha;
 
     // Verificar as definições regulares
     if(*buffer == ':') {
@@ -103,12 +100,9 @@ TInfoAtomo obter_atomo() {
         buffer++;
     } else if(*buffer == 0) {
         atomo.atomo = EOS;
-        printf("\nRetornou Fim");
     } else if(isalpha(*buffer)) {
-        printf("\nIdent");
         atomo = atomoIdentificador();
     } else if(isdigit(*buffer)) {
-        printf("\nDigit");
         atomo = atomoInteiro();
     }
 
@@ -125,7 +119,6 @@ TInfoAtomo atomoAtribuicao() {
         
         if(*buffer == '=') {
             atomo.atomo = ATRIBUICAO;
-            printf("\nRetornou Atribuicao");
         }
     }
 
@@ -147,7 +140,6 @@ TInfoAtomo atomoWhile() {
                     buffer++;
                     if(*buffer == 'e' || *buffer == 'E') {
                         atomo.atomo = WHILE;
-                        printf("\nRetornou While");
                     }
                 }
             }
@@ -163,28 +155,28 @@ TInfoAtomo atomoIdentificador() {
     atomo.linha = globalLinha;
     int contagem = 0;
 
-    q0:
+    id0:
         if(isalpha(*buffer)) {
             atomo.atributo_ID[contagem] = *buffer;
             buffer++;
             contagem++;
-            goto q1;
+            goto id1;
         } else {
             return atomo;
         }
 
-    q1:
+    id1:
         if(isalpha(*buffer) || isdigit(*buffer)) {
             atomo.atributo_ID[contagem] = *buffer;
             buffer++;
             contagem++;
             
-            goto q1;
+            goto id1;
         } else {
-            goto q2;
+            goto id2;
         }
     
-    q2:
+    id2:
         atomo.atomo = IDENTIFICADOR;
         while(contagem <= TAMANHO) {
             atomo.atributo_ID[contagem] = ' ';
@@ -198,32 +190,36 @@ TInfoAtomo atomoInteiro() {
     TInfoAtomo atomo;
     atomo.atomo = ERRO;
     atomo.linha = globalLinha;
+    char numero[TAMANHO];
+    int contagem = 0;
 
-    q0:
+    i0:
         if(isdigit(*buffer)) {
-            atomo.atributo_numero = atoi(*buffer);
+            numero[contagem] = *buffer;
+            contagem++;
             buffer++;
-            goto q1;
+            goto i1;
         } else {
             return atomo;
         }
 
-    q1:
+    i1:
         if(isalpha(*buffer)) {
             buffer++;
             return atomo;
             
         } else if (isdigit(*buffer)) {
-            atomo.atributo_numero *= 10;
-            atomo.atributo_numero += atoi(*buffer);
+            numero[contagem] = *buffer;
+            contagem++;
             atomo.atomo = NUMERO_INTEIRO;
             buffer++;
-            goto q1;
+            goto i1;
         } else {
-            goto q2;
+            atomo.atributo_numero = atoi(numero);
+            goto i2;
         }
     
-    q2:
+    i2:
         return atomo;
 
 }
@@ -232,6 +228,10 @@ TInfoAtomo atomoInteiro() {
 
 - Espaçamento
 - Pular linha
-- Converter ponteiro do número 
-- Lixo que está no nome do identificador
 
+
+- Colocar o while dentro do identificador
+strcasecmp, converter tudo para maiúsculo e comparar
+
+while( *buffer == '\n' || *buffer=='\r' || *buffer==' ' || *buffer == '\t')
+*/
