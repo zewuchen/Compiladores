@@ -80,12 +80,12 @@ TInfoAtomo obter_atomo() {
     atomo.atomo = EOS;
 
     // Acrescentar linhas
-    if(*buffer == '\n' || *buffer == '\r') {
+    while(*buffer == '\n' || *buffer == '\r') {
         globalLinha++;
         buffer++;
     }
-
-    if(*buffer == ' ' || *buffer == '\t') {
+    // Verificar espaços
+    while(*buffer == ' ' || *buffer == '\t') {
         buffer++;
     }
 
@@ -225,10 +225,6 @@ TInfoAtomo atomoInteiro() {
 }
 
 /* Bugs:
-
-- Espaçamento
-- Pular linha
-
 
 - Colocar o while dentro do identificador
 strcasecmp, converter tudo para maiúsculo e comparar
