@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TAMANHO 15
+
 typedef enum {
     ERRO,
     IDENTIFICADOR, 
@@ -18,15 +20,17 @@ typedef struct {
 } TInfoAtomo;
 
 char *buffer;
-int linha = 0;
+int globalLinha = 1;
 TInfoAtomo obter_atomo();
+TInfoAtomo atomoAtribuicao();
+TInfoAtomo atomoWhile();
 
-int main(void){
+int main(void) {
     FILE *fp_entrada, *fp_saida;
     char *iniBuffer;
     
-    fp_entrada = fopen("entrada.txt", "r"); // Abre o arquivo
-    if(!fp_entrada){ // Testa se abriu corretamente
+    fp_entrada = fopen("entrada.c", "r"); // Abre o arquivo
+    if(!fp_entrada) { // Testa se abriu corretamente
         printf("Não conseguiu abriu o arquivo de entrada\n");
         return 1;
     }
@@ -37,9 +41,9 @@ int main(void){
     buffer = (char*)calloc(tamanho+1,sizeof(char)); // Aloca a memoria para guardar o arquivo lido
     fread(buffer, sizeof(char),tamanho,fp_entrada); // Lê de uma vez só o arquivo
     
-    // printf("%s",buffer); // Imprime o arquivo
+    printf("Arquivo \n%s", buffer); // Imprime o arquivo
 
-    fp_saida = fopen("saida.txt", "w+");// Abre o arquivo de saida, w+ abre para escrita e se o arquivo não existir cria
+    fp_saida = fopen("saida.c", "w+");// Abre o arquivo de saida, w+ abre para escrita e se o arquivo não existir cria
     if(!fp_saida){ // Testa se abriu corretamente
         printf("Não conseguiu abriu o arquivo de saída\n");
         return 1;
@@ -47,28 +51,24 @@ int main(void){
 
     iniBuffer = buffer;
 
-    TInfoAtomo atomo = obter_atomo(); // Inicia pegando o primeiro átomo
+    // Inicia pegando o primeiro átomo
     while(1) {
+        TInfoAtomo atomo = obter_atomo();
+        printf("\n-----ATOMO TIPO %d", atomo.atomo);
         if(atomo.atomo == ERRO) {
-            fprintf(fp_saida,"Linha: %d - ERRO\n", linha);
+            fprintf(fp_saida,"Linha: %d - ERRO\n", atomo.linha);
             break;
         } else if(atomo.atomo == IDENTIFICADOR) {
-            // TODO: Fazer algo com o IDENTIFICADOR
+            // fprintf(fp_saida,"Linha: %d - Identificador - %s\n", atomo.linha, atomo.atributo_ID);
             break;
         } else if(atomo.atomo == NUMERO_INTEIRO) {
-            // TODO: Fazer algo com o NUMERO_INTEIRO
             break;
         } else if(atomo.atomo == ATRIBUICAO) {
-            // TODO: Fazer algo com o ATRIBUICAO
-            break;
+            fprintf(fp_saida,"Linha: %d - Operador Atribuição\n", atomo.linha);
         } else if(atomo.atomo == WHILE) {
-            // TODO: Fazer algo com o WHILE
-            break;
+            fprintf(fp_saida,"Linha: %d - While\n", atomo.linha);
         } else if(atomo.atomo == EOS) {
-            // TODO: Fazer algo com o EOS
-            printf("Palavra ID %s\n",atomo.atributo_ID);
-            printf("Linha %d\n",linha);
-            fprintf(fp_saida,"Linha: %d - Identificador - %s\n", linha, atomo.atributo_ID);
+            fprintf(fp_saida,"Linha: %d - Fim de String(EOS)\n", atomo.linha);
             break;
         }
     }
@@ -82,9 +82,69 @@ int main(void){
 
 TInfoAtomo obter_atomo() {
     TInfoAtomo atomo;
-    atomo.atributo_ID[0]= *buffer;
     atomo.atomo = EOS;
-    linha++;
+    atomo.linha = globalLinha;
+
+    // Acrescentar linhas
+    if(*buffer == '\n') {
+        globalLinha++;
+        printf("Linhas %d", globalLinha);
+    }
+
+    // Verificar as definições regulares
+    if(*buffer == ':') {
+        atomo = atomoAtribuicao();
+        buffer++;
+    } else if(*buffer == 'w') {
+        atomo = atomoWhile();
+        buffer++;
+    } else if(*buffer == 0) {
+        atomo.atomo = EOS;
+        atomo.linha = globalLinha;
+        printf("\nRetornou Fim");
+    }
+
+    return atomo;
+}
+
+TInfoAtomo atomoAtribuicao() {
+    TInfoAtomo atomo;
+    atomo.atomo = ERRO;
+    atomo.linha = globalLinha;
+
+    if(*buffer == ':') {
+        buffer++;
+        
+        if(*buffer == '=') {
+            atomo.atomo = ATRIBUICAO;
+            printf("\nRetornou Atribuicao");
+        }
+    }
+
+    return atomo;
+}
+
+TInfoAtomo atomoWhile() {
+    TInfoAtomo atomo;
+    atomo.atomo = ERRO;
+    atomo.linha = globalLinha;
+
+    if(*buffer == 'w' || *buffer == 'W') {
+        buffer++;
+        if(*buffer == 'h' || *buffer == 'H') {
+            buffer++;
+            if(*buffer == 'i' || *buffer == 'I') {
+                buffer++;
+                if(*buffer == 'l' || *buffer == 'L') {
+                    buffer++;
+                    if(*buffer == 'e' || *buffer == 'E') {
+                        atomo.atomo = WHILE;
+                        printf("\nRetornou While");
+                    }
+                }
+            }
+        }
+    }
 
     return atomo;
 }
