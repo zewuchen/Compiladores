@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h> 
+#include <ctype.h>
+#include <strings.h>
 
 #define TAMANHO 15
 
@@ -95,9 +96,6 @@ TInfoAtomo obter_atomo() {
     if(*buffer == ':') {
         atomo = atomoAtribuicao();
         buffer++;
-    } else if(*buffer == 'w') {
-        atomo = atomoWhile();
-        buffer++;
     } else if(*buffer == 0) {
         atomo.atomo = EOS;
     } else if(isalpha(*buffer)) {
@@ -119,30 +117,6 @@ TInfoAtomo atomoAtribuicao() {
         
         if(*buffer == '=') {
             atomo.atomo = ATRIBUICAO;
-        }
-    }
-
-    return atomo;
-}
-
-TInfoAtomo atomoWhile() {
-    TInfoAtomo atomo;
-    atomo.atomo = ERRO;
-    atomo.linha = globalLinha;
-
-    if(*buffer == 'w' || *buffer == 'W') {
-        buffer++;
-        if(*buffer == 'h' || *buffer == 'H') {
-            buffer++;
-            if(*buffer == 'i' || *buffer == 'I') {
-                buffer++;
-                if(*buffer == 'l' || *buffer == 'L') {
-                    buffer++;
-                    if(*buffer == 'e' || *buffer == 'E') {
-                        atomo.atomo = WHILE;
-                    }
-                }
-            }
         }
     }
 
@@ -178,9 +152,12 @@ TInfoAtomo atomoIdentificador() {
     
     id2:
         atomo.atomo = IDENTIFICADOR;
-        while(contagem <= TAMANHO) {
-            atomo.atributo_ID[contagem] = ' ';
-            contagem++;
+        if(contagem == 5) {
+            int result = strcasecmp("while", atomo.atributo_ID);
+
+            if(result == 0) {
+                atomo.atomo = WHILE;
+            }
         }
         return atomo;
 
@@ -223,11 +200,3 @@ TInfoAtomo atomoInteiro() {
         return atomo;
 
 }
-
-/* Bugs:
-
-- Colocar o while dentro do identificador
-strcasecmp, converter tudo para maiúsculo e comparar
-
-while( *buffer == '\n' || *buffer=='\r' || *buffer==' ' || *buffer == '\t')
-*/
