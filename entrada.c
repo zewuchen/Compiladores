@@ -1,2 +1,1 @@
-while:=whilewhile
-a
+10

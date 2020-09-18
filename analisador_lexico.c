@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h> 
 
 #define TAMANHO 15
 
@@ -24,6 +25,8 @@ int globalLinha = 1;
 TInfoAtomo obter_atomo();
 TInfoAtomo atomoAtribuicao();
 TInfoAtomo atomoWhile();
+TInfoAtomo atomoIdentificador();
+TInfoAtomo atomoInteiro();
 
 int main(void) {
     FILE *fp_entrada, *fp_saida;
@@ -59,10 +62,10 @@ int main(void) {
             fprintf(fp_saida,"Linha: %d - ERRO\n", atomo.linha);
             break;
         } else if(atomo.atomo == IDENTIFICADOR) {
-            // fprintf(fp_saida,"Linha: %d - Identificador - %s\n", atomo.linha, atomo.atributo_ID);
-            break;
+            fprintf(fp_saida,"Linha: %d - Identificador - %s\n", atomo.linha, atomo.atributo_ID);
         } else if(atomo.atomo == NUMERO_INTEIRO) {
-            break;
+            char number[TAMANHO];
+            fprintf(fp_saida,"Linha: %d - Número Inteiro - %d\n", atomo.linha, atomo.atributo_numero);
         } else if(atomo.atomo == ATRIBUICAO) {
             fprintf(fp_saida,"Linha: %d - Operador Atribuição\n", atomo.linha);
         } else if(atomo.atomo == WHILE) {
@@ -100,8 +103,13 @@ TInfoAtomo obter_atomo() {
         buffer++;
     } else if(*buffer == 0) {
         atomo.atomo = EOS;
-        atomo.linha = globalLinha;
         printf("\nRetornou Fim");
+    } else if(isalpha(*buffer)) {
+        printf("\nIdent");
+        atomo = atomoIdentificador();
+    } else if(isdigit(*buffer)) {
+        printf("\nDigit");
+        atomo = atomoInteiro();
     }
 
     return atomo;
@@ -148,3 +156,82 @@ TInfoAtomo atomoWhile() {
 
     return atomo;
 }
+
+TInfoAtomo atomoIdentificador() {
+    TInfoAtomo atomo;
+    atomo.atomo = ERRO;
+    atomo.linha = globalLinha;
+    int contagem = 0;
+
+    q0:
+        if(isalpha(*buffer)) {
+            atomo.atributo_ID[contagem] = *buffer;
+            buffer++;
+            contagem++;
+            goto q1;
+        } else {
+            return atomo;
+        }
+
+    q1:
+        if(isalpha(*buffer) || isdigit(*buffer)) {
+            atomo.atributo_ID[contagem] = *buffer;
+            buffer++;
+            contagem++;
+            
+            goto q1;
+        } else {
+            goto q2;
+        }
+    
+    q2:
+        atomo.atomo = IDENTIFICADOR;
+        while(contagem <= TAMANHO) {
+            atomo.atributo_ID[contagem] = ' ';
+            contagem++;
+        }
+        return atomo;
+
+}
+
+TInfoAtomo atomoInteiro() {
+    TInfoAtomo atomo;
+    atomo.atomo = ERRO;
+    atomo.linha = globalLinha;
+
+    q0:
+        if(isdigit(*buffer)) {
+            atomo.atributo_numero = atoi(*buffer);
+            buffer++;
+            goto q1;
+        } else {
+            return atomo;
+        }
+
+    q1:
+        if(isalpha(*buffer)) {
+            buffer++;
+            return atomo;
+            
+        } else if (isdigit(*buffer)) {
+            atomo.atributo_numero *= 10;
+            atomo.atributo_numero += atoi(*buffer);
+            atomo.atomo = NUMERO_INTEIRO;
+            buffer++;
+            goto q1;
+        } else {
+            goto q2;
+        }
+    
+    q2:
+        return atomo;
+
+}
+
+/* Bugs:
+
+- Espaçamento
+- Pular linha
+- Converter ponteiro do número 
+- Lixo que está no nome do identificador
+
