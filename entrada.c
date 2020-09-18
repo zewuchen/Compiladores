@@ -1,7 +1,4 @@
-58250 := while
-while
-
-
-
-asdhjasd
-3
+whiledasdsa
+dasda
+a
+:=645654s654
