@@ -22,7 +22,8 @@ typedef struct {
 } TInfoAtomo;
 
 char *buffer;
-int globalLinha = 1;
+int globalLinha = 1; // Para impressão de contagem de linhas
+int globalTamanhoIdentificador = 0; // Para saber o tamanho da palavra de atributo, problema de não alocar dinamicamente e imprimir lixo
 TInfoAtomo obter_atomo();
 TInfoAtomo atomoAtribuicao();
 TInfoAtomo atomoIdentificador();
@@ -55,7 +56,10 @@ int main(void) {
             printf("\nLinha: %d - ERRO", atomo.linha);
             break;
         } else if(atomo.atomo == IDENTIFICADOR) {
-            printf("\nLinha: %d - Identificador - %s", atomo.linha, atomo.atributo_ID);
+            printf("\nLinha: %d - Identificador - ", atomo.linha);
+            for(int i = 0; i <  globalTamanhoIdentificador; i++) {
+                printf("%c", atomo.atributo_ID[i]);
+            }
         } else if(atomo.atomo == NUMERO_INTEIRO) {
             printf("\nLinha: %d - Número Inteiro - %d", atomo.linha, atomo.atributo_numero);
         } else if(atomo.atomo == ATRIBUICAO) {
@@ -77,13 +81,12 @@ int main(void) {
 TInfoAtomo obter_atomo() {
     TInfoAtomo atomo;
 
-    // Contagem de linhas
-    while(*buffer == '\n' || *buffer == '\r') {
-        globalLinha++;
-        buffer++;
-    }
-    // Contagem de espaços
-    while(*buffer == ' ' || *buffer == '\t') {
+    // Consumo de espaços e linhas
+    while(*buffer == ' ' || *buffer == '\t' || *buffer == '\n' || *buffer == '\r') {
+        // Contagem de linhas
+        if(*buffer == '\n' || *buffer == '\r') {
+            globalLinha++;
+        }
         buffer++;
     }
 
@@ -93,6 +96,7 @@ TInfoAtomo obter_atomo() {
     } else if(*buffer == 0) {
         atomo.atomo = EOS;
     } else if(isalpha(*buffer)) {
+        globalTamanhoIdentificador = 0;
         atomo = atomoIdentificador();
     } else if(isdigit(*buffer)) {
         atomo = atomoInteiro();
@@ -126,15 +130,12 @@ TInfoAtomo atomoIdentificador() {
     atomo.linha = globalLinha;
     int contagem = 0;
 
-    for(int i = 0; i < TAMANHO; i++) {
-        atomo.atributo_ID[i] = "";
-    }
-
     id0:
         if(isalpha(*buffer)) { // Verifica se começa com uma letra
             atomo.atributo_ID[contagem] = *buffer;
             buffer++;
             contagem++;
+            globalTamanhoIdentificador++;
             goto id1;
         } else {
             return atomo;
@@ -145,7 +146,8 @@ TInfoAtomo atomoIdentificador() {
             atomo.atributo_ID[contagem] = *buffer;
             buffer++;
             contagem++;
-            
+            globalTamanhoIdentificador++;
+
             goto id1; // Permite mais letra ou números no identificador
         } else {
             goto id2; // Vai pro estado final
@@ -155,9 +157,16 @@ TInfoAtomo atomoIdentificador() {
         atomo.atomo = IDENTIFICADOR; // Seta sempre como identificador válido
 
         // Verifica se é um While
-        if(contagem == 5) {
-            int result = strcasecmp("while", atomo.atributo_ID);
+        // Fazendo deste modo para contornar o problema do lixo e não alocar dinamicamente
+        char palavra[globalTamanhoIdentificador];
 
+        for(int i = 0; i <  globalTamanhoIdentificador; i++) {
+            palavra[i] = atomo.atributo_ID[i];
+        }
+
+        if(contagem == 5) {
+            int result = strcasecmp("while", palavra);
+            
             if(result == 0) {
                 atomo.atomo = WHILE;
             }
@@ -208,7 +217,3 @@ TInfoAtomo atomoInteiro() {
         atomo.atributo_numero = atoi(numero);
         return atomo;
 }
-
-/*
-BUGS: Limpar cache do identificador"
-*/
