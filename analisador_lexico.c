@@ -148,6 +148,8 @@ int main(void){
             printf("| %f ", infoAtomo.atributo_real);
         if( infoAtomo.atomo == IDENTIFICADOR )
             printf("| %s ", infoAtomo.atributo_ID);
+        if( infoAtomo.atomo == CARACTERE )
+            printf("| %s ", infoAtomo.atributo_ID);
         else if( infoAtomo.atomo == EOS || infoAtomo.atomo == ERRO ){
             break;
         }
