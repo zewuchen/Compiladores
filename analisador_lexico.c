@@ -267,7 +267,7 @@ TInfoAtomo obter_atomo(){
         while(*buffer != '\n') {
             if(*buffer == 0)
                 break;
-                
+
             buffer++;
         }
     }
@@ -282,7 +282,7 @@ TInfoAtomo obter_atomo(){
     else if(isdigit(*buffer)){ // Reconhece numero inteiro
         reconhece_num(&infoAtomo);
     }
-    else if( isalpha(*buffer)){ // Reconhece identificador
+    else if(isalpha(*buffer)){ // Reconhece identificador
         reconhece_ID(&infoAtomo);
     }
     else if(*buffer == 0) // Reconhece fim de string
@@ -295,10 +295,10 @@ void reconhece_num(TInfoAtomo *infoAtomo){
     char *iniNum = buffer;
     int isInt = 1;
 
-    while( isdigit(*buffer))
+    while(isdigit(*buffer))
         buffer++;
 
-    if( isalpha(*buffer))
+    if(isalpha(*buffer))
         return;
     
     if(*buffer =='.' && (*(buffer+1) =='e' || *(buffer+1) =='E')) { 
@@ -314,6 +314,10 @@ void reconhece_num(TInfoAtomo *infoAtomo){
             buffer++;
 
         isInt = 0;
+    }
+
+    if(*buffer =='.') {
+        return;
     }
 
     // TODO: Tratar erro de numero real caso venha apenas 1232.
