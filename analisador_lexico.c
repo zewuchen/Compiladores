@@ -34,6 +34,16 @@ typedef enum {
     EOS
 } TAtomo;
 
+// Vetor de mensagems para o analisador lexico
+char *strAtomo[] = {
+    "ERRO LEXICO",
+    "IDENTIFICADOR",
+    "NUMERO_INTEIRO",
+    "ATRIBUICAO",
+    "WHILE",
+    "END OF STRING"
+};
+
 typedef struct {
     TAtomo atomo;
     int linha;
@@ -73,21 +83,21 @@ int main(void) {
     while(1) {
         TInfoAtomo atomo = obter_atomo();
         if(atomo.atomo == ERRO) {
-            printf("\nLinha: %d - ERRO", atomo.linha);
+            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
             break;
         } else if(atomo.atomo == IDENTIFICADOR) {
-            printf("\nLinha: %d - Identificador - ", atomo.linha);
+            printf("\nLinha: %d - %s - ", atomo.linha, strAtomo[atomo.atomo]);
             for(int i = 0; i <  globalTamanhoIdentificador; i++) {
                 printf("%c", atomo.atributo_ID[i]);
             }
         } else if(atomo.atomo == NUMERO_INTEIRO) {
-            printf("\nLinha: %d - Número Inteiro - %d", atomo.linha, atomo.atributo_numero);
+            printf("\nLinha: %d - %s - %d", atomo.linha , strAtomo[atomo.atomo], atomo.atributo_numero);
         } else if(atomo.atomo == ATRIBUICAO) {
-            printf("\nLinha: %d - Operador Atribuição", atomo.linha);
+            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
         } else if(atomo.atomo == WHILE) {
-            printf("\nLinha: %d - While", atomo.linha);
+            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
         } else if(atomo.atomo == EOS) {
-            printf("\nLinha: %d - Fim de String(EOS)", atomo.linha);
+            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
             break;
         }
     }
