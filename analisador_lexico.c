@@ -50,8 +50,11 @@ typedef enum{
     IG, 
     DI, 
     MA, 
-    MAI 
-
+    MAI,
+    COMENTARIO_1,
+    COMENTARIO_2,
+    NUMERO_REAL,
+    CARACTERE
 }TAtomo;
 
 // vetor de mensagems para o analisador lexico
@@ -94,8 +97,11 @@ char *strAtomo[] = {
     "IG", 
     "DI", 
     "MA", 
-    "MAI" 
-
+    "MAI",
+    "COMENTARIO_1",
+    "COMENTARIO_2",
+    "NUMERO_REAL",
+    "CARACTERE" 
 };
 
 // estrutura para retornar as informa��es de um atomo (tokens)
@@ -103,6 +109,7 @@ typedef struct{
     TAtomo atomo;
     int linha;
     int atributo_numero;
+    double atributo_real;
     char atributo_ID[15];
 }TInfoAtomo;
 
@@ -137,6 +144,8 @@ int main(void){
         printf("\nlinha %d | %s ", infoAtomo.linha,strAtomo[infoAtomo.atomo]);
         if( infoAtomo.atomo == NUMERO_INTEIRO )
             printf("| %d ", infoAtomo.atributo_numero);
+        if( infoAtomo.atomo == NUMERO_REAL )
+            printf("| %f ", infoAtomo.atributo_real);
         if( infoAtomo.atomo == IDENTIFICADOR )
             printf("| %s ", infoAtomo.atributo_ID);
         else if( infoAtomo.atomo == EOS || infoAtomo.atomo == ERRO ){
@@ -163,16 +172,16 @@ TInfoAtomo obter_atomo(){
 
     infoAtomo.atomo = ERRO;
     infoAtomo.linha = contaLinha;
-    // if(buffer[0] ==':' && buffer[1] =='=')
-    if(*buffer ==':' && *(buffer+1) =='='){ // reconhece atribuicao
-        buffer+=2; // incrementa o buffer duas posicoes
+
+    if(*buffer ==':' && *(buffer+1) =='='){
+        buffer+=2; 
         infoAtomo.atomo = ATRIBUICAO;
     }
-    else if(*buffer =='('){ // reconhece numero inteiro
+    else if(*buffer =='('){ 
         infoAtomo.atomo = ABRE_PAR;
         buffer++;
     }
-    else if(*buffer ==')'){ // reconhece numero inteiro
+    else if(*buffer ==')'){ 
         infoAtomo.atomo = FECHA_PAR;
         buffer++;
     }
@@ -200,30 +209,54 @@ TInfoAtomo obter_atomo(){
         infoAtomo.atomo = MULTIPLICACAO;
         buffer++;
     }
-    else if(*buffer =='<' && *(buffer+1) =='='){ // reconhece atribuicao
-        buffer+=2; // incrementa o buffer duas posicoes
+    else if(*buffer =='<' && *(buffer+1) =='='){ 
+        buffer+=2; 
         infoAtomo.atomo = MEI;
     }
-    else if(*buffer =='>' && *(buffer+1) =='='){ // reconhece atribuicao
-        buffer+=2; // incrementa o buffer duas posicoes
+    else if(*buffer =='>' && *(buffer+1) =='='){ 
+        buffer+=2; 
         infoAtomo.atomo = MAI;
     }
-    else if(*buffer =='!' && *(buffer+1) =='='){ // reconhece atribuicao
-        buffer+=2; // incrementa o buffer duas posicoes
+    else if(*buffer =='!' && *(buffer+1) =='='){ 
+        buffer+=2; 
         infoAtomo.atomo = DI;
     }
-    else if(*buffer =='<'){ // reconhece atribuicao
-        buffer++; // incrementa o buffer duas posicoes
+    else if(*buffer =='<'){ 
+        buffer++; 
         infoAtomo.atomo = ME;
     }
-    else if(*buffer == '>'){ // reconhece atribuicao
-        buffer++; // incrementa o buffer duas posicoes
+    else if(*buffer == '>'){ 
+        buffer++; 
         infoAtomo.atomo = MA;
     }
-    else if(*buffer =='='){ // reconhece atribuicao
-        buffer++; // incrementa o buffer duas posicoes
+    else if(*buffer =='='){ 
+        buffer++; 
         infoAtomo.atomo = IG;
     }
+    // As três funções abaixo não funcionam
+    /*
+    else if(*buffer =='{'){
+        infoAtomo.atomo = COMENTARIO_1;
+        while(*buffer != '}') {
+            if( *buffer == '\n' )
+                contaLinha++;
+            if(*buffer == 0) 
+                infoAtomo.atomo = ERRO;
+            buffer++;
+        }
+    }
+    else if(*buffer =='#'){
+        infoAtomo.atomo = COMENTARIO_2;
+        while(*buffer != '\n') {
+            buffer++;
+        }
+    }
+    else if(isascii(*buffer)){ // reconhece caractere
+        infoAtomo.atomo = CARACTERE;
+        infoAtomo.atributo_ID[0] = *buffer;
+        buffer++; 
+    }
+    */
     else if(isdigit(*buffer)){ // reconhece numero inteiro
         reconhece_num(&infoAtomo);
     }
@@ -238,18 +271,41 @@ TInfoAtomo obter_atomo(){
 }
 void reconhece_num(TInfoAtomo *infoAtomo){
     char *iniNum = buffer;
+    int isInt = 1;
 
     while( isdigit(*buffer))
         buffer++;
 
     if( isalpha(*buffer))
         return;
+    
+    if(*buffer =='.' && (*(buffer+1) =='e' || *(buffer+1) =='E')) { 
+        buffer+=2;
 
-    strncpy(infoAtomo->atributo_ID,iniNum,buffer-iniNum);
-    infoAtomo->atributo_ID[buffer-iniNum]=0; // finalizador de string
-    infoAtomo->atributo_numero = atoi(infoAtomo->atributo_ID);
-    infoAtomo->atomo = NUMERO_INTEIRO;
+        if(*buffer =='+' || *buffer =='-')
+            buffer++;
 
+        if( isalpha(*buffer))
+            return;
+
+        while( isdigit(*buffer))
+            buffer++;
+        
+        printf("\nEntrou no reconhecimento de número real");
+        isInt = 0;
+    }
+    
+    if(isInt) {
+        strncpy(infoAtomo->atributo_ID,iniNum,buffer-iniNum);
+        infoAtomo->atributo_ID[buffer-iniNum]=0; // finalizador de string
+        infoAtomo->atributo_numero = atoi(infoAtomo->atributo_ID);
+        infoAtomo->atomo = NUMERO_INTEIRO;
+    } else {
+        strncpy(infoAtomo->atributo_ID,iniNum,buffer-iniNum);
+        infoAtomo->atributo_ID[buffer-iniNum]=0; 
+        infoAtomo->atributo_real = atof(infoAtomo->atributo_ID); // Não sei converter para número real, já adicionei a propriedade double na struct
+        infoAtomo->atomo = NUMERO_REAL;
+    }
 }
 
 void reconhece_ID(TInfoAtomo *infoAtomo){
@@ -302,5 +358,4 @@ void reconhece_ID(TInfoAtomo *infoAtomo){
        infoAtomo->atomo = WRITE;
     else
        infoAtomo->atomo = IDENTIFICADOR;
-
 }
