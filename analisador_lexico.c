@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#define TAMANHO 16 // Tamanho máximo das palavras
 
 char *buffer; // Buffer lido
 char *iniBuffer; // Guarda o inicio do buffer para desalocar
@@ -126,7 +127,7 @@ typedef struct{
     int linha;
     int atributo_numero;
     double atributo_real;
-    char atributo_ID[15];
+    char atributo_ID[TAMANHO];
 } TInfoAtomo;
 
 TInfoAtomo obter_atomo();
@@ -337,11 +338,11 @@ void reconhece_num(TInfoAtomo *infoAtomo){
 
 void reconhece_ID(TInfoAtomo *infoAtomo){
     char *iniID = buffer;
-
+    // TODO: Colocar underline a partir da segunda letra
     while(isalpha(*buffer) || isdigit(*buffer))
         buffer++;
-
     strncpy(infoAtomo->atributo_ID,iniID,buffer-iniID);
+
     infoAtomo->atributo_ID[buffer-iniID]=0; // Finalizador de string
     if( strcasecmp(infoAtomo->atributo_ID,"WHILE")==0 )
        infoAtomo->atomo = WHILE;
@@ -383,6 +384,13 @@ void reconhece_ID(TInfoAtomo *infoAtomo){
        infoAtomo->atomo = TRUE;
     else if( strcasecmp(infoAtomo->atributo_ID,"WRITE")==0 )
        infoAtomo->atomo = WRITE;
-    else
-       infoAtomo->atomo = IDENTIFICADOR;
+    else {
+        int tamanho_palavra = strlen(infoAtomo->atributo_ID);
+
+        if(tamanho_palavra > TAMANHO) {
+            infoAtomo->atomo = ERRO;
+        } else {
+            infoAtomo->atomo = IDENTIFICADOR;
+        }
+    }   
 }
