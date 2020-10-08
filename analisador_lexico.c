@@ -18,7 +18,40 @@ typedef enum{
     ATRIBUICAO,
     WHILE,
     EOS,
-    ABRE_PAR
+    AND, 
+    BEGIN, 
+    BOOLEAN, 
+    CHAR, 
+    DO, 
+    ELSE, 
+    END, 
+    FALSE, 
+    IF, 
+    INTEGER, 
+    MOD,
+    NOT,
+    OR, 
+    PROGRAM,
+    READ,
+    REAL,
+    THEN, 
+    TRUE, 
+    WRITE,
+    ABRE_PAR,
+    FECHA_PAR,
+    PONTO,
+    PONTO_VIRGULA,
+    SUBTRACAO,
+    ADICAO,
+    DIVISAO,
+    MULTIPLICACAO,
+    ME, 
+    MEI,
+    IG, 
+    DI, 
+    MA, 
+    MAI 
+
 }TAtomo;
 
 // vetor de mensagems para o analisador lexico
@@ -29,7 +62,40 @@ char *strAtomo[] = {
     "ATRIBUICAO",
     "WHILE",
     "END OF STRING",
+    "AND", 
+    "BEGIN", 
+    "BOOLEAN", 
+    "CHAR", 
+    "DO", 
+    "ELSE", 
+    "END", 
+    "FALSE", 
+    "IF", 
+    "INTEGER", 
+    "MOD",
+    "NOT",
+    "OR", 
+    "PROGRAM",
+    "READ",
+    "REAL",
+    "THEN", 
+    "TRUE", 
+    "WRITE",
     "ABRE_PAR",
+    "FECHA_PAR",
+    "PONTO",
+    "PONTO_VIRGULA",
+    "SUBTRACAO",
+    "ADICAO",
+    "DIVISAO",
+    "MULTIPLICACAO",
+    "ME", 
+    "MEI",
+    "IG", 
+    "DI", 
+    "MA", 
+    "MAI" 
+
 };
 
 // estrutura para retornar as informa��es de um atomo (tokens)
@@ -88,8 +154,6 @@ valor do �tomo e o seu atributo, caso se fa�a necess�rio para o �tomo.
 TInfoAtomo obter_atomo(){
     TInfoAtomo infoAtomo;
 
-
-
     // descarta carateres delimitadores
     while( *buffer == '\n' || *buffer == '\r' || *buffer == '\t' || *buffer == ' '){
         if( *buffer == '\n' )
@@ -107,6 +171,58 @@ TInfoAtomo obter_atomo(){
     else if(*buffer =='('){ // reconhece numero inteiro
         infoAtomo.atomo = ABRE_PAR;
         buffer++;
+    }
+    else if(*buffer ==')'){ // reconhece numero inteiro
+        infoAtomo.atomo = FECHA_PAR;
+        buffer++;
+    }
+    else if(*buffer =='.'){ // reconhece numero inteiro
+        infoAtomo.atomo = PONTO;
+        buffer++;
+    }
+    else if(*buffer ==';'){ 
+        infoAtomo.atomo = PONTO_VIRGULA;
+        buffer++;
+    }
+    else if(*buffer =='-'){ 
+        infoAtomo.atomo = SUBTRACAO;
+        buffer++;
+    }
+    else if(*buffer =='+'){ 
+        infoAtomo.atomo = ADICAO;
+        buffer++;
+    }
+    else if(*buffer =='/'){ 
+        infoAtomo.atomo = DIVISAO;
+        buffer++;
+    }
+    else if(*buffer =='*'){ 
+        infoAtomo.atomo = MULTIPLICACAO;
+        buffer++;
+    }
+    else if(*buffer =='<' && *(buffer+1) =='='){ // reconhece atribuicao
+        buffer+=2; // incrementa o buffer duas posicoes
+        infoAtomo.atomo = MEI;
+    }
+    else if(*buffer =='>' && *(buffer+1) =='='){ // reconhece atribuicao
+        buffer+=2; // incrementa o buffer duas posicoes
+        infoAtomo.atomo = MAI;
+    }
+    else if(*buffer =='!' && *(buffer+1) =='='){ // reconhece atribuicao
+        buffer+=2; // incrementa o buffer duas posicoes
+        infoAtomo.atomo = DI;
+    }
+    else if(*buffer =='<'){ // reconhece atribuicao
+        buffer++; // incrementa o buffer duas posicoes
+        infoAtomo.atomo = ME;
+    }
+    else if(*buffer == '>'){ // reconhece atribuicao
+        buffer++; // incrementa o buffer duas posicoes
+        infoAtomo.atomo = MA;
+    }
+    else if(*buffer =='='){ // reconhece atribuicao
+        buffer++; // incrementa o buffer duas posicoes
+        infoAtomo.atomo = IG;
     }
     else if(isdigit(*buffer)){ // reconhece numero inteiro
         reconhece_num(&infoAtomo);
@@ -146,6 +262,44 @@ void reconhece_ID(TInfoAtomo *infoAtomo){
     infoAtomo->atributo_ID[buffer-iniID]=0; // finalizador de string
     if( strcasecmp(infoAtomo->atributo_ID,"WHILE")==0 )
        infoAtomo->atomo = WHILE;
+    else if( strcasecmp(infoAtomo->atributo_ID,"AND")==0 )
+       infoAtomo->atomo = AND;
+    else if( strcasecmp(infoAtomo->atributo_ID,"BEGIN")==0 )
+       infoAtomo->atomo = BEGIN;
+    else if( strcasecmp(infoAtomo->atributo_ID,"BOOLEAN")==0 )
+       infoAtomo->atomo = BOOLEAN;
+    else if( strcasecmp(infoAtomo->atributo_ID,"CHAR")==0 )
+       infoAtomo->atomo = CHAR;
+    else if( strcasecmp(infoAtomo->atributo_ID,"DO")==0 )
+       infoAtomo->atomo = DO;
+    else if( strcasecmp(infoAtomo->atributo_ID,"ELSE")==0 )
+       infoAtomo->atomo = ELSE;
+    else if( strcasecmp(infoAtomo->atributo_ID,"END")==0 )
+       infoAtomo->atomo = END;
+    else if( strcasecmp(infoAtomo->atributo_ID,"FALSE")==0 )
+       infoAtomo->atomo = FALSE;
+    else if( strcasecmp(infoAtomo->atributo_ID,"IF")==0 )
+       infoAtomo->atomo = IF;
+    else if( strcasecmp(infoAtomo->atributo_ID,"INTEGER")==0 )
+       infoAtomo->atomo = INTEGER;
+    else if( strcasecmp(infoAtomo->atributo_ID,"MOD")==0 )
+       infoAtomo->atomo = MOD;
+    else if( strcasecmp(infoAtomo->atributo_ID,"NOT")==0 )
+       infoAtomo->atomo = NOT;
+    else if( strcasecmp(infoAtomo->atributo_ID,"OR")==0 )
+       infoAtomo->atomo = OR;
+    else if( strcasecmp(infoAtomo->atributo_ID,"PROGRAM")==0 )
+       infoAtomo->atomo = PROGRAM;
+    else if( strcasecmp(infoAtomo->atributo_ID,"READ")==0 )
+       infoAtomo->atomo = READ;
+    else if( strcasecmp(infoAtomo->atributo_ID,"REAL")==0 )
+       infoAtomo->atomo = REAL;
+    else if( strcasecmp(infoAtomo->atributo_ID,"THEN")==0 )
+       infoAtomo->atomo = THEN;
+    else if( strcasecmp(infoAtomo->atributo_ID,"TRUE")==0 )
+       infoAtomo->atomo = TRUE;
+    else if( strcasecmp(infoAtomo->atributo_ID,"WRITE")==0 )
+       infoAtomo->atomo = WRITE;
     else
        infoAtomo->atomo = IDENTIFICADOR;
 
