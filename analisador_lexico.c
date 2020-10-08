@@ -233,6 +233,35 @@ TInfoAtomo obter_atomo(){
         buffer++; 
         infoAtomo.atomo = IG;
     }
+    else if(*buffer =='{'){
+        infoAtomo.atomo = COMENTARIO_1;
+        while(*buffer != '}') {
+            if( *buffer == '\n' )
+                contaLinha++;
+            if(*buffer == 0)
+                infoAtomo.atomo = ERRO;
+            buffer++;
+            // TODO: tratar erro de fechamento
+        }
+        // consome o fecha comentario
+        if(*buffer != 0) {
+            buffer++;
+        }
+    }
+    else if(*buffer =='#'){
+        infoAtomo.atomo = COMENTARIO_2;
+        while(*buffer != '\n') {
+            buffer++;
+        }
+    }
+    else if(*buffer=='\''){ // reconhece caractere
+        // consome o abre caractere '
+        buffer++;
+        infoAtomo.atomo = CARACTERE;
+        infoAtomo.atributo_ID[0] = *buffer;
+        buffer++;// caractere
+        buffer++;// fecha caractere '
+    }
     // As três funções abaixo não funcionam
     /*
     else if(*buffer =='{'){
