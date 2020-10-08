@@ -320,8 +320,6 @@ void reconhece_num(TInfoAtomo *infoAtomo){
     if(*buffer =='.') {
         return;
     }
-
-    // TODO: Tratar erro de numero real caso venha apenas 1232.
     
     if(isInt) {
         strncpy(infoAtomo->atributo_ID,iniNum,buffer-iniNum);
@@ -338,8 +336,12 @@ void reconhece_num(TInfoAtomo *infoAtomo){
 
 void reconhece_ID(TInfoAtomo *infoAtomo){
     char *iniID = buffer;
-    // TODO: Colocar underline a partir da segunda letra
-    while(isalpha(*buffer) || isdigit(*buffer))
+    
+    if(isalpha(*buffer)) {
+        buffer++;
+    }
+
+    while(isalpha(*buffer) || isdigit(*buffer) || *buffer == '_')
         buffer++;
     strncpy(infoAtomo->atributo_ID,iniID,buffer-iniID);
 
