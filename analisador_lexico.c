@@ -294,6 +294,8 @@ void reconhece_num(TInfoAtomo *infoAtomo){
         printf("\nEntrou no reconhecimento de número real");
         isInt = 0;
     }
+
+    // TODO: Tratar erro de numero real
     
     if(isInt) {
         strncpy(infoAtomo->atributo_ID,iniNum,buffer-iniNum);
