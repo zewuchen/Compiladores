@@ -248,23 +248,26 @@ TInfoAtomo obter_atomo(){
         infoAtomo.atomo = IG;
     }
     else if(*buffer =='{'){
-        infoAtomo.atomo = COMENTARIO_1;
+        infoAtomo.atomo = ERRO;
         while(*buffer != '}') {
             if( *buffer == '\n' )
                 contaLinha++;
             if(*buffer == 0)
-                infoAtomo.atomo = ERRO;
+                break;
             buffer++;
-            // TODO: tratar erro de fechamento
         }
-        // Consome o fecha comentario
-        if(*buffer != 0) {
+        // Consome o fecha comentario e valida se fechou o comentário
+        if(*buffer != 0 && *buffer == '}') {
+            infoAtomo.atomo = COMENTARIO_1;
             buffer++;
         }
     }
     else if(*buffer =='#'){
         infoAtomo.atomo = COMENTARIO_2;
         while(*buffer != '\n') {
+            if(*buffer == 0)
+                break;
+                
             buffer++;
         }
     }
