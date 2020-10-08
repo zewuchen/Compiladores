@@ -1,249 +1,152 @@
-/*
-    Entrega de trabalho - Mini Analisador Léxico
-
-    Nós,
-
-    Zewu Chen 31808751
-
-    declaramos que
-
-    todas as respostas são fruto de nosso próprio trabalho,
-    não copiamos respostas de colegas externos à equipe,
-    não disponibilizamos nossas respostas para colegas externos à equipe e
-    não realizamos quaisquer outras atividades desonestas para nos beneficiar ou prejudicar outros.
-
-    Matéria: Compiladores
-    Curso: Ciência da Computação
-    TIA: 31808751
-    Professor: Fabio Lubacheski
-*/
-
+// links para funcoes que vamos utilizar
+// http://www.cplusplus.com/reference/cstring/strncpy/
+// https://en.wikibooks.org/wiki/C_Programming/C_Reference/nonstandard/strcasecmp
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
-#include <strings.h>
+#include <ctype.h> // isdigit, isalpha
+#include <string.h>
 
-#define TAMANHO 15 // Tamanho máximo das palavras
+char *buffer; // buffer lido
+char *iniBuffer; // guarda o inicio do buffer para desalocar
+int contaLinha=1; // faz a contagem de linha do programa
 
-typedef enum {
+// constantes para os atomos do mini analisador l�xico
+typedef enum{
     ERRO,
-    IDENTIFICADOR, 
-    NUMERO_INTEIRO, 
-    ATRIBUICAO, 
+    IDENTIFICADOR,
+    NUMERO_INTEIRO,
+    ATRIBUICAO,
     WHILE,
-    EOS
-} TAtomo;
+    EOS,
+    ABRE_PAR
+}TAtomo;
 
-// Vetor de mensagems para o analisador lexico
+// vetor de mensagems para o analisador lexico
 char *strAtomo[] = {
     "ERRO LEXICO",
     "IDENTIFICADOR",
     "NUMERO_INTEIRO",
     "ATRIBUICAO",
     "WHILE",
-    "END OF STRING"
+    "END OF STRING",
+    "ABRE_PAR",
 };
 
-typedef struct {
+// estrutura para retornar as informa��es de um atomo (tokens)
+typedef struct{
     TAtomo atomo;
     int linha;
     int atributo_numero;
     char atributo_ID[15];
-} TInfoAtomo;
+}TInfoAtomo;
 
-char *buffer;
-int globalLinha = 1; // Para impressão de contagem de linhas
-int globalTamanhoIdentificador = 0; // Para saber o tamanho da palavra de atributo, problema de não alocar dinamicamente e imprimir lixo
 TInfoAtomo obter_atomo();
-TInfoAtomo atomoAtribuicao();
-TInfoAtomo atomoIdentificador();
-TInfoAtomo atomoInteiro();
+void reconhece_num(TInfoAtomo *infoAtomo);
+void reconhece_ID(TInfoAtomo *infoAtomo);
 
-int main(void) {
+
+int main(void){
     FILE *fp_entrada;
-    char *iniBuffer;
-    
-    fp_entrada = fopen("entrada.c", "r"); // Abre o arquivo
-    if(!fp_entrada) { // Testa se abriu corretamente
-        printf("Não conseguiu abriu o arquivo de entrada\n");
+    TInfoAtomo infoAtomo;
+
+    // abre o arquivo
+    fp_entrada = fopen("entrada.c", "r");
+    if(!fp_entrada){ // testa se abriu corretamente
+        printf("erro na abertura do arquivo de entrada.\n");
         return 1;
     }
+    // abertura e leitura de arquivo
+    fseek(fp_entrada, 0, SEEK_END); // move ponteiro do arquivo para o final
+    long tamanho = ftell(fp_entrada); // conta a quantidade de bytes deslocados na movimentacao
+    fseek(fp_entrada, 0, SEEK_SET); // move novamente para o inicio do arquivo
+    buffer = (char*)calloc(tamanho+1,sizeof(char)); // aloca os memoria para guardar o arquivo lido
+    fread(buffer, sizeof(char),tamanho,fp_entrada); // le de uma vez so o arquivo
+    fclose(fp_entrada); // fecha arquivo
 
-    fseek(fp_entrada, 0, SEEK_END); // Move ponteiro do arquivo para o final
-    long tamanho = ftell(fp_entrada); // Conta a quantidade de bytes do arquivo
-    fseek(fp_entrada, 0, SEEK_SET); // Move ponteiro do arquivo para o inicio
-    buffer = (char*)calloc(tamanho+1,sizeof(char)); // Aloca a memoria para guardar o arquivo lido
-    fread(buffer, sizeof(char),tamanho,fp_entrada); // Lê de uma vez só o arquivo
-    
-    // printf("Arquivo \n%s", buffer); // Imprime o arquivo
+    printf("%s",buffer);
+    printf("\n------------------------------\n");
 
-    iniBuffer = buffer;
-
-    // Inicia pegando o primeiro átomo e vai buscando todos os átomos do arquivo
-    while(1) {
-        TInfoAtomo atomo = obter_atomo();
-        if(atomo.atomo == ERRO) {
-            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
-            break;
-        } else if(atomo.atomo == IDENTIFICADOR) {
-            printf("\nLinha: %d - %s - ", atomo.linha, strAtomo[atomo.atomo]);
-            for(int i = 0; i <  globalTamanhoIdentificador; i++) {
-                printf("%c", atomo.atributo_ID[i]);
-            }
-        } else if(atomo.atomo == NUMERO_INTEIRO) {
-            printf("\nLinha: %d - %s - %d", atomo.linha , strAtomo[atomo.atomo], atomo.atributo_numero);
-        } else if(atomo.atomo == ATRIBUICAO) {
-            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
-        } else if(atomo.atomo == WHILE) {
-            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
-        } else if(atomo.atomo == EOS) {
-            printf("\nLinha: %d - %s", atomo.linha, strAtomo[atomo.atomo]);
+    while(1){
+        infoAtomo = obter_atomo();
+        printf("\nlinha %d | %s ", infoAtomo.linha,strAtomo[infoAtomo.atomo]);
+        if( infoAtomo.atomo == NUMERO_INTEIRO )
+            printf("| %d ", infoAtomo.atributo_numero);
+        if( infoAtomo.atomo == IDENTIFICADOR )
+            printf("| %s ", infoAtomo.atributo_ID);
+        else if( infoAtomo.atomo == EOS || infoAtomo.atomo == ERRO ){
             break;
         }
     }
-
+    printf("\nfim de analise lexica.\n");
     free(iniBuffer);
-    fclose(fp_entrada);
-    
     return 0;
 }
+/*
+A rotina obter_atomo() do mini analisador l�xico retorna para cada �tomo reconhecido uma codifica��o inteira (constante) para representar o
+valor do �tomo e o seu atributo, caso se fa�a necess�rio para o �tomo.
+*/
+TInfoAtomo obter_atomo(){
+    TInfoAtomo infoAtomo;
 
-TInfoAtomo obter_atomo() {
-    TInfoAtomo atomo;
 
-    // Consumo de espaços e linhas
-    while(*buffer == ' ' || *buffer == '\t' || *buffer == '\n' || *buffer == '\r') {
-        // Contagem de linhas
-        if(*buffer == '\n' || *buffer == '\r') {
-            globalLinha++;
-        }
+
+    // descarta carateres delimitadores
+    while( *buffer == '\n' || *buffer == '\r' || *buffer == '\t' || *buffer == ' '){
+        if( *buffer == '\n' )
+            contaLinha++;
         buffer++;
     }
 
-    // Verificar as definições regulares
-    if(*buffer == ':') {
-        atomo = atomoAtribuicao();
-    } else if(*buffer == 0) {
-        atomo.atomo = EOS;
-    } else if(isalpha(*buffer)) {
-        globalTamanhoIdentificador = 0;
-        atomo = atomoIdentificador();
-    } else if(isdigit(*buffer)) {
-        atomo = atomoInteiro();
-    } else {
-        atomo.atomo = ERRO;
+    infoAtomo.atomo = ERRO;
+    infoAtomo.linha = contaLinha;
+    // if(buffer[0] ==':' && buffer[1] =='=')
+    if(*buffer ==':' && *(buffer+1) =='='){ // reconhece atribuicao
+        buffer+=2; // incrementa o buffer duas posicoes
+        infoAtomo.atomo = ATRIBUICAO;
     }
-
-    return atomo;
-}
-
-TInfoAtomo atomoAtribuicao() {
-    TInfoAtomo atomo;
-    atomo.atomo = ERRO;
-    atomo.linha = globalLinha;
-
-    if(*buffer == ':') {
+    else if(*buffer =='('){ // reconhece numero inteiro
+        infoAtomo.atomo = ABRE_PAR;
         buffer++;
-        
-        if(*buffer == '=') {
-            buffer++;
-            atomo.atomo = ATRIBUICAO;
-        }
     }
+    else if(isdigit(*buffer)){ // reconhece numero inteiro
+        reconhece_num(&infoAtomo);
+    }
+    else if( isalpha(*buffer)){ // reconhece identificador
+        reconhece_ID(&infoAtomo);
+    }
+    else if(*buffer == 0) // reconhece fim de string
+        infoAtomo.atomo = EOS;
 
-    return atomo;
+    return infoAtomo;
+
 }
+void reconhece_num(TInfoAtomo *infoAtomo){
+    char *iniNum = buffer;
 
-TInfoAtomo atomoIdentificador() {
-    TInfoAtomo atomo;
-    atomo.atomo = ERRO;
-    atomo.linha = globalLinha;
-    int contagem = 0;
+    while( isdigit(*buffer))
+        buffer++;
 
-    id0:
-        if(isalpha(*buffer)) { // Verifica se começa com uma letra
-            atomo.atributo_ID[contagem] = *buffer;
-            buffer++;
-            contagem++;
-            globalTamanhoIdentificador++;
-            goto id1;
-        } else {
-            return atomo;
-        }
+    if( isalpha(*buffer))
+        return;
 
-    id1:
-        if(isalpha(*buffer) || isdigit(*buffer)) { // Pode vir letra ou dígito depois da primeira letra
-            atomo.atributo_ID[contagem] = *buffer;
-            buffer++;
-            contagem++;
-            globalTamanhoIdentificador++;
-
-            goto id1; // Permite mais letra ou números no identificador
-        } else {
-            goto id2; // Vai pro estado final
-        }
-    
-    id2:
-        atomo.atomo = IDENTIFICADOR; // Seta sempre como identificador válido
-
-        // Verifica se é um While
-        // Fazendo deste modo para contornar o problema do lixo e não alocar dinamicamente
-        char palavra[globalTamanhoIdentificador];
-
-        for(int i = 0; i <  globalTamanhoIdentificador; i++) {
-            palavra[i] = atomo.atributo_ID[i];
-        }
-
-        if(contagem == 5) {
-            int result = strcasecmp("while", palavra);
-            
-            if(result == 0) {
-                atomo.atomo = WHILE;
-            }
-        }
-        
-        return atomo;
+    strncpy(infoAtomo->atributo_ID,iniNum,buffer-iniNum);
+    infoAtomo->atributo_ID[buffer-iniNum]=0; // finalizador de string
+    infoAtomo->atributo_numero = atoi(infoAtomo->atributo_ID);
+    infoAtomo->atomo = NUMERO_INTEIRO;
 
 }
 
-TInfoAtomo atomoInteiro() {
-    TInfoAtomo atomo;
-    atomo.atomo = ERRO;
-    atomo.linha = globalLinha;
-    char numero[TAMANHO];
-    int contagem = 0;
+void reconhece_ID(TInfoAtomo *infoAtomo){
+    char *iniID = buffer;
 
-    int0:
-        if(isdigit(*buffer)) {
-            numero[contagem] = *buffer;
-            contagem++;
-            buffer++;
+    while(isalpha(*buffer) || isdigit(*buffer))
+        buffer++;
 
-            if(*buffer == 0) { // Caso de ser apenas um número simples
-                goto int2;
-            } else {    // Caso de ser um número com dois dígitos ou mais
-                goto int1;
-            }
-        } else {
-            return atomo; // Não é um número inteiro, dá erro
-        }
+    strncpy(infoAtomo->atributo_ID,iniID,buffer-iniID);
+    infoAtomo->atributo_ID[buffer-iniID]=0; // finalizador de string
+    if( strcasecmp(infoAtomo->atributo_ID,"WHILE")==0 )
+       infoAtomo->atomo = WHILE;
+    else
+       infoAtomo->atomo = IDENTIFICADOR;
 
-    int1:
-        if(isalpha(*buffer)) {
-            buffer++;
-            return atomo; // Veio uma letra, vai dar erro
-
-        } else if (isdigit(*buffer)) { // Veio um dígito e o consome
-            numero[contagem] = *buffer;
-            contagem++;
-            buffer++;
-            goto int1;
-        } else {
-            goto int2;
-        }
-    
-    int2: // Estado final que aceita o número inteiro, converte e retorna
-        atomo.atomo = NUMERO_INTEIRO;
-        atomo.atributo_numero = atoi(numero);
-        return atomo;
 }
