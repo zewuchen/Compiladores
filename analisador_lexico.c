@@ -1,5 +1,5 @@
 /*
-    Entrega de trabalho - Mini Analisador Léxico
+    Entrega de trabalho - Analisador Sintático
 
     Nós,
 
