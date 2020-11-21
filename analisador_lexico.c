@@ -71,7 +71,8 @@ typedef enum{
     COMENTARIO_1,
     COMENTARIO_2,
     NUMERO_REAL,
-    CARACTERE
+    CARACTERE,
+    VIRGULA
 }TAtomo;
 
 // Vetor de mensagems para o analisador lexico
@@ -118,7 +119,8 @@ char *strAtomo[] = {
     "COMENTARIO_1",
     "COMENTARIO_2",
     "NUMERO_REAL",
-    "CARACTERE" 
+    "CARACTERE",
+    "VIRGULA" 
 };
 
 // Estrutura para retornar as informações de um atomo (tokens)
@@ -131,15 +133,18 @@ typedef struct{
 } TInfoAtomo;
 
 TInfoAtomo obter_atomo();
+TInfoAtomo infoAtomo;
+TInfoAtomo lookahead; // Simbolo no inicio da cadeia
 void reconhece_num(TInfoAtomo *infoAtomo);
 void reconhece_ID(TInfoAtomo *infoAtomo);
+void consome(TAtomo atomo);
+void programa();
 
 int main(void){
     FILE *fp_entrada;
-    TInfoAtomo infoAtomo;
 
     // Abre o arquivo
-    fp_entrada = fopen("entrada.c", "r");
+    fp_entrada = fopen("entrada2.c", "r");
     if(!fp_entrada){ // Testa se abriu corretamente
         printf("Erro na abertura do arquivo de entrada.\n");
         return 1;
@@ -155,24 +160,51 @@ int main(void){
     // printf("%s",buffer);
     // printf("\n------------------------------\n");
 
-    while(1){
-        infoAtomo = obter_atomo();
-        printf("\nLinha %d | %s ", infoAtomo.linha,strAtomo[infoAtomo.atomo]);
-        if( infoAtomo.atomo == NUMERO_INTEIRO )
-            printf("| %d ", infoAtomo.atributo_numero);
-        if( infoAtomo.atomo == NUMERO_REAL )
-            printf("| %f ", infoAtomo.atributo_real);
-        if( infoAtomo.atomo == IDENTIFICADOR )
-            printf("| %s ", infoAtomo.atributo_ID);
-        if( infoAtomo.atomo == CARACTERE )
-            printf("| %s ", infoAtomo.atributo_ID);
-        else if( infoAtomo.atomo == EOS || infoAtomo.atomo == ERRO ){
-            break;
-        }
-    }
-    printf("\nFim de analise lexica.\n");
+    // while(1) {
+    //     infoAtomo = obter_atomo();
+    //     printf("\nLinha %d | %s ", infoAtomo.linha, strAtomo[infoAtomo.atomo]);
+    //     if( infoAtomo.atomo == NUMERO_INTEIRO )
+    //         printf("| %d ", infoAtomo.atributo_numero);
+    //     if( infoAtomo.atomo == NUMERO_REAL )
+    //         printf("| %f ", infoAtomo.atributo_real);
+    //     if( infoAtomo.atomo == IDENTIFICADOR )
+    //         printf("| %s ", infoAtomo.atributo_ID);
+    //     if( infoAtomo.atomo == CARACTERE )
+    //         printf("| %s ", infoAtomo.atributo_ID);
+    //     else if( infoAtomo.atomo == EOS || infoAtomo.atomo == ERRO ){
+    //         break;
+    //     }
+    // }
+    infoAtomo = obter_atomo();
+    lookahead = infoAtomo;
+    programa();
     free(iniBuffer);
     return 0;
+}
+
+void consome(TAtomo atomo) {
+
+    if(infoAtomo.atomo == atomo) {
+        infoAtomo = obter_atomo();
+        lookahead = infoAtomo;
+    } else {
+        if(infoAtomo.atomo == ERRO) {
+            printf("Erro léxico: esperado [%s] encontrado [%s] na linha [%d]\n", strAtomo[atomo], strAtomo[infoAtomo.atomo],infoAtomo.linha);
+        } else {
+            printf("Erro sintático: esperado [%s] encontrado [%s] na linha [%d]\n", strAtomo[atomo], strAtomo[infoAtomo.atomo],infoAtomo.linha);
+        }
+        exit(1);
+    }
+}
+
+// <programa>::= program identificador “;” <bloco> “.”
+void programa() {
+    consome(PROGRAM);
+    consome(IDENTIFICADOR);
+    consome(PONTO_VIRGULA);
+    // bloco();
+    consome(PONTO);
+    printf("\nFim de programa\n");
 }
 
 TInfoAtomo obter_atomo(){
@@ -202,6 +234,10 @@ TInfoAtomo obter_atomo(){
     }
     else if(*buffer =='.'){
         infoAtomo.atomo = PONTO;
+        buffer++;
+    }
+    else if(*buffer ==','){ 
+        infoAtomo.atomo = VIRGULA;
         buffer++;
     }
     else if(*buffer ==';'){ 
@@ -286,8 +322,10 @@ TInfoAtomo obter_atomo(){
     else if(isalpha(*buffer)){ // Reconhece identificador
         reconhece_ID(&infoAtomo);
     }
-    else if(*buffer == 0) // Reconhece fim de string
+    else if(*buffer == 0){ // Reconhece fim de string
         infoAtomo.atomo = EOS;
+    }
+    // TODO: ERRO Léxico
 
     return infoAtomo;
 }
