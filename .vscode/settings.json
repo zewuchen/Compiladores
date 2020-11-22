@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "ASDR1.C": "cpp"
+        "ASDR1.C": "cpp",
+        "ratio": "c"
     }
 }

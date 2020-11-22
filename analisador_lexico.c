@@ -186,6 +186,11 @@ int main(void){
 
 void consome(TAtomo atomo) {
 
+    while(lookahead.atomo == COMENTARIO_1 || lookahead.atomo == COMENTARIO_2) {
+        infoAtomo = obter_atomo();
+        lookahead = infoAtomo;
+    }
+
     if(lookahead.atomo == atomo) {
         infoAtomo = obter_atomo();
         lookahead = infoAtomo;
@@ -196,6 +201,11 @@ void consome(TAtomo atomo) {
             printf("Erro sintático: esperado [%s] encontrado [%s] na linha [%d]\n", strAtomo[atomo], strAtomo[infoAtomo.atomo],infoAtomo.linha);
         }
         exit(1);
+    }
+
+    while(lookahead.atomo == COMENTARIO_1 || lookahead.atomo == COMENTARIO_2) {
+        infoAtomo = obter_atomo();
+        lookahead = infoAtomo;
     }
 }
 
